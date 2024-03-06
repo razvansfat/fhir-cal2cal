@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+{% block title %}Forms{% endblock %}
+
+{% block content %}
+
+<script src="{{ url_for('static', filename = 'node_modules/jquery/dist/jquery.min.js') }}"></script>
+<article>
+<form class="needs-validation" id="formQuestion" action="{{url_for('views.formsrulessave')}}" method="post">
+    <div onClick="addRule()" class="mb-2 btn btn-success">Add rule</div>
+    <hr>
+    <div class="" id="addRule"></div>
+    
+    <div class="buttons bkg-white">
+        <input type="button" value="Send" class="btn btn-primary" id="btnSalveaza" onclick="salveaza()">
+    </div>
+</form>
+   <!--
+<div class="row mt-5">
+    <div class="col">
+        <form class="needs-validation" id="formQuestion" action="{{url_for('views.formsrulessave')}}" method="post"></form>
+        <pre class="" id="rezultat"></pre>
+        <div class="buttons bkg-white">
+            <input type="button" value="Send" class="btn btn-primary" id="btnSalveaza" onclick="salveaza()">
+        </div>
+        </form>
+    </div>
+</div>-->
+
+  </article>
+
+<div id="rulesEx"></div>
+
+  {% endblock %}
+    
+  {% block customJS %}
+
+<script>
+// console.log(JSON.stringify({{items|safe}}));
+{% set items = continut['item'] %}
+    let varTest = {{items|safe}};
+    console.log(varTest);
+
+    let allQ = [];
+    let tt = [];
+    let ttOpt = [];
+    let ttOptV = [];
+    for( t in varTest ){
+        allQ.push(varTest[t]['linkId']);
+
+        if(varTest[t]['type'] == 'choice'){
+
+            tt.push(varTest[t]['linkId']);
+
+            for(ttt in varTest[t]['answerOption']){
+                ttOptV.push(varTest[t]['answerOption'][ttt]['valueString']);
+            }
+            ttOpt[varTest[t]['linkId']] = ttOptV;
+            ttOptV = []; 
+        }
+
+        if(varTest[t]['type'] == 'boolean') {
+            tt.push(varTest[t]['linkId']);
+
+            ttOptV.push('true');
+            ttOptV.push('false');
+
+            // console.log('@@@@@@@@@@@@@@@@@');
+            // console.log(ttOptV);
+            // console.log('@@@@@@@@@@@@@@@@@');
+
+            ttOpt[varTest[t]['linkId']] = ttOptV;
+            ttOptV = []; 
+        }
+    };
+
+    
+//#############################################  AFISARE REGULI EXISTENTE  #########################################################
+    //console.log(varTest);
+    //console.log(allQ);
+    let optiuni = '';
+
+    for (i = 0; i < varTest.length; i++) {
+        if('enableWhen' in varTest[i]){
+            // console.log(varTest[i]);
+            for(ii = 0; ii < varTest[i]['enableWhen'].length; ii++){
+                // console.log(varTest[i]['enableWhen'][ii]['question']);
+                question = varTest[i]['enableWhen'][ii]['question'].split('~');
+                // console.log(question[1].replace('#', ''));
+
+                let idIntrebare2 = Math.floor(Math.random() * 1001);
+                let intr2 = `
+                        <div class="row mt-1" id="${idIntrebare2}">
+                            <div class="col-md-12">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                <select class="form-control" name="selIntrIF" id="sel${idIntrebare2}" onchange="optIntr(this.value, ${idIntrebare2})"><option></option>
+                    `;
+
+                for ( x of tt){
+                    // console.log(question);
+                    if(varTest[question[0]-1]['linkId'] == x){
+                        intrOpt2 = `<option value="${x}" selected>${varTest[x-1]['text']}</option>`;
+                        intr2 += intrOpt2;
+                    } else {
+                        intrOpt2 = `<option value="${x}">${varTest[x-1]['text']}</option>`;
+                        intr2 += intrOpt2;
+                    };
+                };
+
+                intr2 += `</select></div>`;
+
+                // partea dreapta
+                intr2 += `<div class="col-md-4"><select class="form-control" name="selRaspIf"><option value="">aici</option>`;
+                linkidEW = varTest[i]['linkId'];
+                for ( nrA of allQ){
+
+                    if(varTest[nrA-1]['enableWhen'] !== undefined){
+                        console.log(i);
+                        console.log(' - ');
+                        console.log(varTest[nrA-1]['enableWhen'][0]['question']);
+                    };
+
+                    if(allQ[nrA-1] == varTest[i]['linkId']){
+                        intr2 += `<option value="${allQ[nrA-1]}" selected>${varTest[nrA-1]['text']}</option>`;
+                    } else {
+                        intr2 += `<option value="${allQ[nrA-1]}">${varTest[nrA-1]['text']}</option>`;
+                    };
+                };
+
+
+                intr2 += `</select></div></div>`;
+                let optiuni = '';
+                if(varTest[question[0]-1]['type'] == 'boolean'){
+
+                    intrOptiuni = `<br><input type="radio" ${question[1].replace('#', '')==1?'checked':''} name="intr~${varTest[question[0]-1]['linkId']}~`+idIntrebare2+`" id="${varTest[question[0]-1]['linkId']}~${idIntrebare2}~1" class="mt-3" value="${varTest[question[0]-1]['linkId']}~${idIntrebare2}~1"> Yes`;
+                    optiuni += intrOptiuni;
+                    intrOptiuni = `<br><input type="radio" ${question[1].replace('#', '')==0?'checked':''} name="intr~${varTest[question[0]-1]['linkId']}~`+idIntrebare2+`" id="${varTest[question[0]-1]['linkId']}~${idIntrebare2}~0" class="mt-3" value="${varTest[question[0]-1]['linkId']}~${idIntrebare2}~0"> No`;
+                    optiuni += intrOptiuni;
+                    
+                };
+
+                if(varTest[question[0]-1]['type'] == 'choice'){
+                    idArr = 1;
+                    for ( y of varTest[question[0]-1]['answerOption']){
+                        intrOptiuni = `<br><input type="checkbox" ${idArr == question[1].replace('#','')?'checked':''} name="intr~${varTest[question[0]-1]['linkId']}~`+idIntrebare2+`" id="${idIntrebare2}~${varTest[question[0]-1]['linkId']}~`+i+`" class="mt-3" value="${idIntrebare2}~${varTest[question[0]-1]['linkId']}~`+i+`">`+y['valueString'];
+                        optiuni += intrOptiuni;
+                        idArr = idArr + 1;
+                    }
+                }
+                intr2 += optiuni;
+
+                intr2 += `<div id="optIntr${idIntrebare2}"></div>`;
+
+
+
+                intr2 += `</div></div>`;
+
+                $('#rulesEx').append(intr2);
+
+            };
+        };
+    };
+
+
+
+//################################################  END AFISARE REGULI EXISTENTE  ######################################################
+
+
+   
+
+
+    function addRule(){
+
+        let ruleID = Math.floor(Math.random() * 1001);
+
+        let rule = `
+        <div class="row" id="rule${ruleID}">
+            <div class="col-md-4">
+                <div onClick="addQuestion(${ruleID})" class="mb-2 btn btn-danger">Add question</div>
+                <div class="" id="question${ruleID}"></div>
+            </div>
+            <div class="col-md-4" id="showQuestion">
+                <select class="form-control" name="selIntrShow" >
+                    <option></option>`;
+
+        for ( nrA of allQ){
+            //console.log(varTest);
+            // rule += `<option value="${allQ[nrA-1]}">${allQ[nrA-1]}</option>`;
+            rule += `<option value="${allQ[nrA-1]}">${varTest[nrA-1]['text']}</option>`;
+        };
+                    rule +=`</select>
+            </div>
+        </div>
+        <hr>
+        `;
+
+        $('#addRule').append(rule);
+        
+    }
+
+    function addQuestion(idRule){
+        //console.log(tt);
+
+        let idIntrebare = Math.floor(Math.random() * 1001);
+
+        let intrebari = tt;
+        let optIntr = ttOpt;
+
+        let intr = `
+            <div class="row mt-1" id="${idIntrebare}">
+                <div class="col-md-12">
+                    <select class="form-control" name="selIntrIF" id="sel${idIntrebare}" onchange="optIntr(this.value, ${idIntrebare})"><option></option>
+        `;
+            
+        for ( x of intrebari){
+            intrOpt = `<option value="${x}">${varTest[x-1]['text']}</option>`;
+            intr += intrOpt;
+        };
+
+        intr += `</select></div>`;
+                
+        // for (y of intrebari){
+        //     intr += `<div id="intr${y}"></div>`;
+        // }
+        
+        intr += `<div id="optIntr${idIntrebare}"></div>`;
+
+        intr += `</div>`;
+
+        $('#question' + idRule).append( intr );
+
+    }
+
+
+    function optIntr(idIntr, idDiv){
+        let optIntr = ttOpt;    
+
+        // let parentID = idDiv.parentNode.parentNode.id;
+        // console.log(parentID);
+
+        $('.intr' + idIntr).css({'display': 'block'});
+        let optiuni = '';
+        i = 1;
+
+        for( t in varTest ){
+
+            
+            if(varTest[t]['linkId'] == idIntr){
+                if(varTest[t]['type'] == 'boolean'){
+                    //console.log('@@@@@@@@@@@');
+                    //console.log(idDiv);
+                    //console.log('@@@@@@@@@@@');
+                    intrOptiuni = `<br><input type="radio" name="intr~${idIntr}~`+idDiv+`" id="${idDiv}~${idIntr}~1" class="mt-3" value="${idDiv}~${idIntr}~1"> Yes`;
+                    optiuni += intrOptiuni;
+                    intrOptiuni = `<br><input type="radio" name="intr~${idIntr}~`+idDiv+`" id="${idDiv}~${idIntr}~0" class="mt-3" value="${idDiv}~${idIntr}~0"> No`;
+                    optiuni += intrOptiuni;
+                    i = i + 1;
+
+                } else if(varTest[t]['type'] == 'choice'){
+                    for ( y of optIntr[idIntr]){
+                        
+                        intrOptiuni = `<br><input type="checkbox" name="intr~${idIntr}~`+idDiv+`" id="${idDiv}~${idIntr}~`+i+`" class="mt-3" value="${idDiv}~${idIntr}~`+i+`">`+y.replace('%20', ' ');
+                        optiuni += intrOptiuni;
+                        i = i + 1;
+                    }
+                }
+            }
+        }
+
+        $('#optIntr' + idDiv).html( optiuni );
+
+    }
+
+    function salveaza(){
+       
+        var str = $( "form" ).serialize();           
+//console.log(str);
+        $.ajax({
+            type: "post",
+            url: "{{url_for('views.formsrulessave')}}",
+            data: {'data':JSON.stringify(str), 'id': {{continut['id']}}},
+            success: function (response) {
+                // $('#rezultat').text(response);
+                location.href = "/home";
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.log(textStatus, errorThrown);
+            }
+        });
+    }
+
+
+</script>
+{% endblock %}

@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Create Forms{% endblock %}
+
+{% block content %}
+
+<div class="row">
+    <div class="col-md-12">
+        <h1>{{ titleQ }}</h1>
+    </div>
+</div>
+<hr>
+
+<!-- <button type="button" id='bar' class="tipChart btn btn-primary btn-sm">Bar</button>
+<button type="button" id='line' class="tipChart btn btn-primary btn-sm">Line</button>
+<button type="button" id='pie' class="tipChart btn btn-primary btn-sm">Pie</button> -->
+
+<!-- <div class="row">
+    <div class="col-md-12" >
+        <canvas id="canvas" width="900" height="400"></canvas>
+    </div>
+</div> -->
+
+{% if fullData != '' %}
+
+    {% set chartNr = 1 %}
+
+    {% for key, val in fullData.items() %}
+
+        <div class="row mb-3 pt-3 pb-5 card shadow mb-4">
+            <div class="col-md-12 ">
+                <h5>{{key}}</h5>
+                
+                <p>{{total[key]}} answers</p>
+                <canvas id="canvas{{ loop.index }}" width="900" height="200"></canvas>
+            </div>
+        </div>
+
+            <script>
+                var etichete = [];
+                var valori = [];
+            </script>
+        {% for key2, val2 in val.items() %}
+            <script>
+                etichete[{{ loop.index }}-1] =  "{{ key2 }}";
+                valori[{{ loop.index }}-1] =  "{{ val2 }}";
+            </script>
+    {% endfor %}
+
+    <br>
+
+    <script>
+        console.log(etichete);
+        console.log(valori);
+        var config = {
+            data: {
+                labels: etichete,
+                datasets: [
+                    {
+                        label: "",
+                        data: valori,
+                        fill: false,
+                        borderColor: "rgb(75, 192, 192)",
+                        lineTension: 0.1,
+                        backgroundColor: [
+                            'rgba(255, 0, 0)',
+                            'rgba(78, 115, 223)',
+                            'rgba(255, 205, 86)',
+                            'rgba(75, 192, 192)',
+                            'rgba(54, 162, 235)',
+                            'rgba(153, 102, 255)',
+                            'rgba(201, 203, 207)'
+                        ],
+                    }
+                ]
+            },
+            options: {
+                responsive: false,
+                legend: {
+                    position: "bottom"
+                },
+            }
+        };
+
+        var myChart{{ loop.index }};
+
+        var ctx{{ loop.index }} = document.getElementById("canvas{{ loop.index }}").getContext("2d");
+        if (myChart{{ loop.index }}) {
+            myChart{{ loop.index }}.destroy();
+        }
+        var temp = jQuery.extend(true, {}, config);
+        temp.type = 'pie';
+        myChart{{ loop.index }} = new Chart(ctx{{ loop.index }}, temp);
+        
+    </script>
+
+
+    {% endfor %}
+
+{% else %}
+
+    <h2>No answers</h2>
+
+{% endif %}
+
+{% endblock %}

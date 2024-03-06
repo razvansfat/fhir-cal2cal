@@ -1,0 +1,143 @@
+
+{% extends "base.html" %}
+{% block title %}Create Forms{% endblock %}
+
+{% block content %}
+    <h1>Create questionnaire form</h1>
+
+    <form method="post" role="form" class="build-wrap" id="build-wrap">
+
+        
+
+    </form>
+
+{% endblock %}
+
+{% block customJS %}
+
+
+    
+
+    <script src="{{ url_for('static', filename = 'node_modules/formBuilder/dist/form-builder.js') }}"></script>
+    <script src="{{ url_for('static', filename = 'node_modules/formBuilder/dist/form-render.min.js') }}"></script>
+
+    <script>
+        jQuery(function($) {
+        var formData = '[{"type": "header", "label": "Form title"},{"type": "text", "label": "Metatags", "className": "form-control", "name": "Metatags", "value": ""}]';
+        var fields = [
+            {
+                label: "Slider",
+                type: "number",
+                subtype: "slider-int",
+                icon: "✉",
+            },
+            {
+                label: "Slider-text",
+                type: "select",
+            },
+        ];
+        var fbEditor = document.getElementById("build-wrap"),
+            options = {
+                editOnAdd: false,
+                disabledAttrs: [ "other", "placeholder", "className", "subtype", "access", "maxlength", "required", "name"],
+                disableFields: ['select', 'textarea', 'autocomplete', 'button', 'hidden', 'paragraph', 'number', 'file'],
+                disabledFieldButtons: {
+                    text: ['copy'],
+                    header: ['copy'],
+                    "radio-group": ['copy'],
+                    "checkbox-group": ['copy'],
+                    date: ['copy'],
+                    select: ['copy'],
+                    number: ['copy'],
+                },
+                controlOrder: [
+                    'header',
+                    'text',
+                    'checkbox-group',
+                    'radio-group',
+                    'date',
+                    'textarea',
+                    'select'
+                ],
+                replaceFields: [
+                    {
+                    type: "text",
+                    label: "+ question with free answer"
+                    },
+                    {
+                    type: "date",
+                    label: "+ question with calendar data"
+                    },
+                    {
+                    type: "checkbox-group",
+                    label: "+ question with multiple choice"
+                    },
+                    {
+                    type: "header",
+                    label: "Form Title",
+
+                    },
+                    {
+                    type: "radio-group",
+                    label: "+ question with single choice",
+                    values: [{ label: "Yes", value: "yes" }, { label: "No", value: "no" }],
+                    "other": false,
+                    "access": false,
+                    },
+                    {
+                    type: "select",
+                    label: "+ question with single choice from multiple options",
+                    "other": false,
+                    "access": false,
+                    },
+                    /*{
+                    type: "number",
+                    label: "+ question with numeric slider response"
+                    },*/
+
+                ],
+                typeUserDisabledAttrs: {
+                    'radio-group': [
+                        'options',
+                        'inline',
+                    ],
+                    'checkbox-group': [
+                        'toggle',
+                        'inline',
+                    ],
+                    'date':[
+                        'value'
+                    ],
+                    
+                },
+
+                typeUserEvents: {
+                    'checkbox-group': {
+                        onadd: function(fld) {
+                            $('.option-selected').removeAttr('checked');
+                        }
+                    },
+                    'select': {
+                        onadd: function(fld) {
+                            $('.fld-multiple').hide();
+                            var myInputBoxID = $('.fld-multiple').attr("id");
+                            console.log(myInputBoxID);
+                            
+                            $('label[for="' + myInputBoxID + '"]').hide();
+                        }
+                    }
+                },
+                
+
+                dataType: 'json',
+                formData,
+                
+            
+            };
+        $(fbEditor).formBuilder(options);
+
+
+        });
+
+    </script>
+{% endblock %}

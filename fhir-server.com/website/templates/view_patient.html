@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Forms{% endblock %}
+
+{% block content %}
+
+<div class="row">
+    <div class="col-md-12">
+        <h1>Patient information</h1>
+    </div>
+</div>
+
+{% if 'resourceType' in patient %}
+    {% set firstName = patient['name'][0]['family'] %}
+    {% set lastName = patient['name'][0]['given'][0] %}
+    {% set gender = patient['gender'] %}    
+    {% set address = patient['address'][0]['line'][0] %}
+    {% set city = patient['address'][0]['city'] %}
+    {% set postalCode = patient['address'][0]['postalCode'] %}
+    {% set country = patient['address'][0]['country'] %}
+    {% set birthDay = patient['birthDate'] %}
+    {% set id = patient['id'] %}
+
+    <hr>
+    <div class="row">
+        <div class="col-md-12">
+            
+            <h2>{{ firstName }} {{ lastName }}</h2>
+            <hr>
+            <h3>About</h3>
+            <h5>Birthday: {{ birthDay }}<h5>
+            <h5>Gender: {{ gender }}</h5>
+            <hr>
+            <h3>Contact informations</h3>
+
+                {% for items in patient['telecom'] %}
+                    {% if items['system'] == 'phone' %}
+                        {% set phone = items['value'] %}
+                        <h5>Phone: {{ phone }}<h54>
+                    {% endif %}
+                    {% if items['system'] == 'email' %}
+                        {% set email = items['value'] %}
+                        <h5>Email: {{ email }}<h54></h54>
+                    {% endif %}
+                {% endfor %}
+
+            <hr>
+            <h3>Address</h3>
+            <h5>{{ address }}<h54>
+            <h5>{{ postalCode }}<h54>
+            <h5>{{ city }}</h5>
+            <h5>{{ country }}</h5>
+
+        </div>
+    </div>
+
+{% endif %}
+
+{% endblock %}

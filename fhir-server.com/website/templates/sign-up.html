@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Sign Up{% endblock %}
+
+{% block content %}
+
+{% if userEdit is defined %}
+    {% set email = userEdit.username %}
+    {% set first_name = userEdit.first_name %}
+    {% set last_name = userEdit.last_name %}
+    {% set password = userEdit.password %}
+    {% set userEditRole = userEdit.role %}
+{% else %}
+    {% set email = '' %}
+    {% set first_name = '' %}
+    {% set last_name = '' %}
+    {% set password = '' %}
+    {% set userEditRole = 0 %}
+{% endif %}
+
+    <form action="" method="POST">
+        <h3 align="center">Add practitioner</h3>
+        <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" class="form-control" id="email" name="email" placeholder="Enter email" value='{{ email }}'>
+
+            <label for="firstName">First name</label>
+            <input type="text" class="form-control" id="firstName" name="firstName" placeholder="Enter first name" value='{{ first_name }}'>
+            
+            <label for="lastName">Last name</label>
+            <input type="text" class="form-control" id="lastName" name="lastName" placeholder="Enter last name" value='{{ last_name }}'>
+
+            <label for="password1">Password</label>
+            <input type="password" class="form-control" id="password1" name="password1" placeholder="Enter password" value='{{ password }}'>
+
+            <label for="password2">Password (confirm)</label>
+            <input type="password" class="form-control" id="password2" name="password2" placeholder="Confirm password" value='{{ password }}'>
+            
+            <label for="roles">User role</label>
+            <select name="userRoles" id="userRoles" class="form-control">
+                {% for role in nomRoles %}
+                    {% if roles.role > 1 %}
+                        {% if role['code'] > 1 %}
+                            <option value="{{ role['code'] }}" {{ 'selected' if role['code'] == userEditRole }}>{{ role['role_name'] }}</option>
+                        {% endif %}
+                    {% else %}
+                        <option value="{{ role['code'] }}" {{ 'selected' if role['code'] == userEditRole }}>{{ role['role_name'] }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+
+        </div>
+        <br>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+{% endblock %}

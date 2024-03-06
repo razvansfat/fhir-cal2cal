@@ -1,0 +1,516 @@
+{% extends "base.html" %}
+{% block title %}Forms{% endblock %}
+
+
+{% block content %}
+   
+    {% set name = question %}
+    {% set patientsAll = patients %}
+
+    <h1>Questionnaire {{question['title']}}</h1>
+
+<form id="formResponse" action="{{url_for('views.saveRaspuns')}}" method="post">
+        
+    <select name="patients" id="patients" class="form-control mb-3">
+        <option value=""></option>
+        {% for elem in patients %}
+            <option value="Patient/{{ elem['id'] }}">
+                {{ elem['id'] }} - {{ elem['name'][0]['family'] | replace("%20", " ") }} {{ elem['name'][0]['given'][0] | replace("%20", " ") }}
+            </option>
+        {% endfor %}
+
+    </select>
+
+
+    {% for elem in name['item'] %}
+ 
+        {% if 'enableWhen' in elem %}
+        <div id="q-{{ elem['linkId'] }}">
+            <h5 class="{{ elem['enableWhen'][0]['question'] |replace('~', '-') |replace('#', '') }}" id="{{ elem['enableWhen'][0]['question'] | replace('~', '') | replace('#', '') }}{{ elem['linkId'] }}" style="color: lightsteelblue;">{{ elem['text'] | replace("%20", " ") | replace("%0D%0A", "\n")}}</h5>
+
+        {% else %}
+            <h5>{{ elem['text'] | replace("%20", " ") | replace("%0D%0A", "\n")}}</h5>
+        {% endif %} 
+
+        {% if 'enableWhen' in elem %}
+
+            {% if elem['type'] == 'text' %}
+                {% if elem['enableWhen'][0]['answerBoolean'] == True %}
+                    {% set boolVal = 1 %}
+                {% else %}
+                    {% set boolVal = 0 %}
+                {% endif %}
+                <div>
+                    <textarea name="{{ elem['type'] }}~{{ name['id'] }}~{{ elem['linkId'] }}~{{ loop.index }}" id="{{elem['enableWhen'][0]['question']|replace('#', '')|replace('~', '')}}{{ elem['linkId'] }}" class="form-control autoresizing {{elem['enableWhen'][0]['question']|replace('#', '')|replace('~', '-')}}" disabled="disabled" onfocus="autoResizeText()"></textarea>
+                </div>
+            {% endif %}
+
+            {% if elem['type'] == 'choice' %}  
+                {% if 'extension' in elem %}
+                    <div class="col-md-12 mb-3">
+                        {% for elemChoice in elem['answerOption'] %}
+                            <div class="form-check form-check-inline">
+                                <input disabled="disabled" onclick="disableCheckbox('{{ elem['linkId']}}~{{ loop.index }}#', 'choice~EXT', {{ elem['linkId']}}{{ loop.index }})" class="form-check-input {{ elem['enableWhen'][0]['question'] |replace('~', '-') |replace('#', '') }}" type="radio" name="{{ elem['type'] }}~{{ name['id'] }}~{{ elem['linkId'] }}" id="{{ elem['enableWhen'][0]['question'] |replace('~', '-') |replace('#', '') }}" value="{{ elemChoice['valueString'] | replace('%20', ' ')}}">
+                                <label class="form-check-label" for="{{ elem['linkId']}}{{ loop.index }}">{{ elemChoice['valueString'] | replace('%20', ' ')}}</label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {% for elem2 in elem['answerOption'] %}
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">
+                                    {% if 'enableWhen' in elem %}
+                                        <input disabled="disabled" class="{{ elem['enableWhen'][0]['question'] |replace('~', '-') |replace('#', '') }}" type="checkbox" name="{{ elem['type'] }}~{{ name['id'] }}~{{ elem['linkId'] }}~{{ loop.index }}"  id="{{ elem['enableWhen'][0]['question'] |replace('~', '-') |replace('#', '') }}" value="{{ elem2['valueString'] | replace(' ', ' ')}}" onclick="disableCheckbox('{{ elem['linkId']}}~{{ loop.index }}#', 'choice', {{ elem['linkId']}}{{ loop.index }})">
+                                    {% else %}
+                                        <input type="checkbox" class="{{ elem['enableWhen'][0]['question'] |replace('~', '-') |replace('#', '') }}" name="{{ elem['type'] }}~{{ name['id'] }}~{{ elem['linkId'] }}~{{ loop.index }}"  id="{{ elem['enableWhen'][0]['question'] |replace('~', '-') |replace('#', '') }}" value="{{ elem2['valueString'] | replace(' ', ' ')}}" onclick="disableCheckbox('{{ elem['linkId']}}~{{ loop.index }}#', 'choice', {{ elem['linkId']}}{{ loop.index }})">
+                                    {% endif %}
+                                    <label class="form-check-label" for="{{ elem['linkId']}}{{loop.index}}">
+                                        {{ elem2['valueString'] | replace('%20', ' ')}}
+                                    </label>  
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endif %}
+
+            {% if 'extension' in elem %}
+                {% if elem['type'] == 'integer' %}
+                    {% set min = elem['extension'][1]['valueInteger'] %}
+                    {% set max = elem['extension'][2]['valueInteger'] %}
+                    {% set step = elem['extension'][3]['valueInteger'] %}
+                    {% set val = max/2 %}
+                    <div class="col-md-12 mb-3">
+                        <div class="content-in-tab">
+                            {{ min }}<input type="range" name="{{ elem['type'] }}~{{ name['id'] }}~{{ elem['linkId'] }}~{{ loop.index }}" id="{{elem['enableWhen'][0]['question']|replace('#', '')|replace('~', '')}}{{ elem['linkId'] }}" list="tickmarks" min="{{ min }}" max="{{ max }}" value="{{ min }}" step="{{ step }}" class="col-md-10 form-range {{elem['enableWhen'][0]['question']|replace('#', '')|replace('~', '-')}}" disabled="disabled">{{ max }}
+                            <datalist id="tickmarks">
+                            {% for i in range(elem['extension'][1]['valueInteger']+1) %}
+                                    <option value="{{ i }}"></option>
+                            {% endfor %}
+                            </datalist>
+                            <span id="demo-{{ elem['linkId']}}"></span>
+                        </div>
+                    </div>
+                    <script>
+                        var slider{{ elem['linkId']}} = document.getElementById("slide-{{ elem['linkId']}}");
+                        var output{{ elem['linkId']}} = document.getElementById("demo-{{ elem['linkId']}}");
+                        output{{ elem['linkId']}}.innerHTML = slider{{ elem['linkId']}}.value;
+
+                        slider{{ elem['linkId']}}.oninput = function() {
+                            output{{ elem['linkId']}}.innerHTML = this.value;
+                        }
+                    </script>
+                {% endif %}
+            {% endif %}
+
+            {% if elem['type'] == 'boolean' %}
+                <div class="form-check">
+                    {% if 'enableWhen' in elem %}
+                        <input disabled="true" onclick="disableCheckbox('{{ elem["linkId"] }}~1#', 'boolean', '{{ elem['linkId']}}1')" class="form-check-input {{elem['enableWhen'][0]['question']|replace('#', '')|replace('~', '-')}}" type="radio" name="{{ elem['type'] }}~{{ name['id'] }}~{{ elem['linkId'] }}" id="{{ elem['linkId'] }}-1" value="true">
+                        <label class="form-check-label" for="{{ elem['linkId'] }}-true">
+                            Yes
+                        </label>
+                        <br>
+                        <input disabled="true" onclick="disableCheckbox('{{ elem["linkId"] }}~0#', 'boolean', '{{ elem['linkId']}}0')" class="form-check-input {{elem['enableWhen'][0]['question']|replace('#', '')|replace('~', '-')}}" type="radio" name="{{ elem['type'] }}~{{ name['id'] }}~{{ elem['linkId'] }}" id="{{ elem['linkId'] }}-0" value="false">
+                        <label class="form-check-label" for="{{ elem['linkId'] }}-false">
+                            No
+                        </label>
+                    {% else %}
+                        <input onclick="disableCheckbox('{{ elem["linkId"] }}~1#', 'boolean', '{{ elem['linkId']}}1')" class="form-check-input {{elem['enableWhen'][0]['question']|replace('#', '')|replace('~', '-')}}" type="radio" name="{{ elem['type'] }}~{{ name['id'] }}~{{ elem['linkId'] }}" id="{{ elem['linkId'] }}-1" value="true">
+                        <label class="form-check-label" for="{{ elem['linkId'] }}-true">
+                            Yes
+                        </label>
+                        <br>
+                        <input onclick="disableCheckbox('{{ elem["linkId"] }}~0#', 'boolean', '{{ elem['linkId']}}1')" class="form-check-input {{elem['enableWhen'][0]['question']|replace('#', '')|replace('~', '-')}}" type="radio" name="{{ elem['type'] }}~{{ name['id'] }}~{{ elem['linkId'] }}" id="{{ elem['linkId'] }}-0" value="false">
+                        <label class="form-check-label" for="{{ elem['linkId'] }}-false">
+                            No
+                        </label>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            {% if elem['type'] == 'date' %}
+                <div>
+                    <input disabled="true" type="date" id="{{ elem['enableWhen'][0]['question'] |replace('~', '-') |replace('#', '') }}" name="{{ elem['type'] }}~{{ name['id'] }}~{{ elem['linkId'] }}~{{ loop.index }}" value="" min="1900-01-01" max="2021-12-31" class="form-control {{ elem['enableWhen'][0]['question'] |replace('~', '-') |replace('#', '') }}">
+                </div>
+            {% endif %}
+
+            {% if elem['type'] == 'time' %}
+                <div style="margin-left:10%;">
+                    <input disabled="true" type="time" id="{{elem['enableWhen'][0]['question']|replace('#', '')|replace('~', '')}}" name="{{ elem['text'] | replace('%20', '_')}}" value="" min="00:00" max="23:59" class="form-control {{elem['enableWhen'][0]['question']|replace('#', '')|replace('~', '-')}}">
+                </div>
+            {% endif %}
+
+            <script>
+                var arr = arr || [];
+                var arr2 = arr2 || [];
+                var rasp = rasp || [];
+                var rasp2 = rasp2 || [];
+                var items = items || {{ name['item']|safe | replace(True, '1')  | replace(False, '0') }};
+
+                for(let i = 0; i < items.length; i++){
+                    if(items[i]['enableWhen'] !== undefined){
+                        rasp.push(items[i]['enableWhen'][0]['question'].replace(/~/gi, ""))
+                    };
+                }
+
+                // function disableFalse(idElem){
+                //     if(idElem == '{{elem['enableWhen'][0]['question']}}'+1){
+                //         $('#'+'{{elem['enableWhen'][0]['question']}}'+0).prop("disabled", true);
+                //         $('#'+idElem).prop("disabled", false);
+                //     } else {
+                //         $('#'+'{{elem['enableWhen'][0]['question']}}'+1).prop("disabled", true);
+                //         $('#'+idElem).prop("disabled", false);
+                //     }
+                // }
+////////////////////////////// DISABLE CHECK BOX ////////////////////////////
+function disableCheckbox(idElemCheck, typeBtn, resp){
+    var items = items || {{ name['item']|safe | replace(True, '1')  | replace(False, '0') }};
+
+    // console.log(idElemCheck);
+    // console.log(typeBtn);
+    // console.log(resp);
+    // console.log('-----------------------------------------------------------------------------');
+    
+    // console.log(items);
+    // console.log('-----------------------------------------------------------------------------');
+    // console.log($('.'+idElemCheck.split('#')[0].replace('~','-')).is(":disabled"));
+
+    if(typeBtn == 'choice'){
+        if($('.'+idElemCheck.split('#')[0].replace('~','-')).is(":disabled") === true){
+            console.log('IF');
+            $('.'+idElemCheck.split('#')[0].replace('~','-')).prop("disabled", false);
+            $('.'+idElemCheck.split('#')[0].replace('~','-')).css("color", "black");
+        } else {
+            console.log('ELSE');
+            $('.'+idElemCheck.split('#')[0].replace('~','-')).prop("disabled", true);
+            $('.'+idElemCheck.split('#')[0].replace('~','-')).css("color", "lightsteelblue");
+            $('.'+idElemCheck.split('#')[0].replace('~','-')).val('');
+        };
+        console.log($('.'+idElemCheck.split('#')[0].replace('~','-')).is(":disabled"));
+    };
+
+    if(typeBtn == 'choice~EXT'){
+        for(let a = 0; a < items.length; a++){
+
+            if(items[a]['linkId'] == idElemCheck.split('#')[0].split('~')[0]){
+                console.log('LINKID');
+                console.log(items[a]['answerOption']);
+                bb = 0;
+                for(let b = 0; b < items[a]['answerOption'].length; b++){
+                    bb = b + 1;
+                    $('.'+idElemCheck.split('#')[0].split('~')[0]+'-'+bb).prop("disabled", true);
+                    $('.'+idElemCheck.split('#')[0].split('~')[0]+'-'+bb).css("color", "lightsteelblue");
+                    $('.'+idElemCheck.split('#')[0].split('~')[0]+'-'+bb).val('');
+                };
+            };
+
+            if(items[a]['enableWhen'] !== undefined){
+                rez = items[a]['enableWhen'][0]['question'];
+                // console.log('rez: '+a+'-'+rez)
+                if(rez == idElemCheck){
+                    $('.'+idElemCheck.split('#')[0].replace('~','-')).prop("disabled", false);
+                    $('.'+idElemCheck.split('#')[0].replace('~','-')).css("color", "black");
+                } else {
+                    // console.log(idElemCheck.split('#')[0].split('~')[0]);
+
+                };
+            };
+        };
+    };
+
+    if(typeBtn == 'boolean'){
+        // iterez var items pt a descoperi care intrebare are enableWhen
+        // cand gasesc intrebarea cu enableWhen verific daca question este egal cu valoare trimisa in idElemCheck
+        // daca sunt egale activez intrebarea
+        for(let a = 0; a < items.length; a++){
+            if(items[a]['enableWhen'] !== undefined){
+                rez = items[a]['enableWhen'][0]['question'];
+                if(rez == idElemCheck){
+                    $('.'+idElemCheck.split('#')[0].replace('~','-')).prop("disabled", false);
+                    $('.'+idElemCheck.split('#')[0].replace('~','-')).css("color", "black");
+
+                    if(idElemCheck.split('#')[0].split('~')[1] == 1){
+                        $('.'+idElemCheck.split('#')[0].split('~')[0]+'-0').prop("disabled", true);
+                        $('.'+idElemCheck.split('#')[0].split('~')[0]+'-0').css("color", "lightsteelblue");
+                        $('.'+idElemCheck.split('#')[0].split('~')[0]+'-0').val('');
+                    } else {
+                        $('.'+idElemCheck.split('#')[0].split('~')[0]+'-1').prop("disabled", true);
+                        $('.'+idElemCheck.split('#')[0].split('~')[0]+'-1').css("color", "lightsteelblue");
+                        $('.'+idElemCheck.split('#')[0].split('~')[0]+'-1').val('');
+                    };
+                } else {
+                    if(idElemCheck.replace('#','').split('~')[0] == rez.split('~')[0]){
+                        $('.'+rez.split('#')[0].split('~')[0]+'-'+rez.split('#')[0].split('~')[1]).prop("disabled", true);
+                        $('.'+rez.split('#')[0].split('~')[0]+'-'+rez.split('#')[0].split('~')[1]).css("color", "lightsteelblue");
+                        $('.'+rez.split('#')[0].split('~')[0]+'-'+rez.split('#')[0].split('~')[1]).val('');
+                    }
+                };
+            };
+        };
+    };
+};
+                // function disableCheckbox(idElemCheck, typeBtn, resp){
+                //     idElemCheckQ = idElemCheck.split('~')
+                //     elemID = idElemCheck.replace('#','');
+                //     elemID2 = elemID.replace('~','');
+
+                //     $('*[id*=elemID2]:visible').each(function() {
+                //         $(this).prop("disabled", true);
+                //     });
+                //     var items = items || {{ name['item']|safe | replace(True, '1')  | replace(False, '0') }};
+                //     var x = x || [];
+                //     let y = idElemCheck.replace('#', '');
+                //     for(let a = 0; a < items.length; a++){ // oare are sens for-ul acesta aici tinand cont ca la fiecare alegere se apeleaza functia???
+                //         let bbb = '';
+                //         if(items[a]['enableWhen'] !== undefined){
+                //             x = items[a]['enableWhen'][0]['question'].split("#");
+                //             for (aa=0; aa<x.length; aa++){
+                //                 if(arr2.indexOf(x[aa]) >= 0){
+                //                     bbb = bbb + x[aa].replace('~','');
+                //                 }
+                //             }
+                //             xx = x[0].split('~');
+                //             if(items[a]['enableWhen'][0]['question'].replace('~', '') == resp+"#"){
+                //                 //idElemCheck, typeBtn, resp
+                //                 if(typeBtn == 'choice'){
+                //                     var checkBox = document.getElementById(resp);
+                //                     if (checkBox.checked == true){
+                //                         if(items[a]['type'] == 'text'){
+                //                             $('#'+resp+items[a]['linkId']).prop("disabled", false);
+                //                         };
+                //                         if(items[a]['type'] == 'boolean'){
+                //                             $('#'+items[a]['linkId']+'-1').prop("disabled", false);
+                //                             $('#'+items[a]['linkId']+'-0').prop("disabled", false);
+                //                         };
+                //                         if(items[a]['type'] == 'choice'){
+                //                             for(i=1; i<=items[a]['answerOption'].length;i++){
+                //                                 $('#'+items[a]['linkId']+i).prop("disabled", false);
+                //                             };
+                //                         };
+                //                         $('#text'+resp+items[a]['linkId']).css("color", "black");
+                //                     } else {
+                //                         if(items[a]['type'] == 'text'){
+                //                             $('#'+resp+items[a]['linkId']).prop("disabled", true);
+                //                         };
+                //                         if(items[a]['type'] == 'boolean'){
+                //                             $('#'+items[a]['linkId']+'-1').prop("disabled", true);
+                //                             $('#'+items[a]['linkId']+'-0').prop("disabled", true);
+                //                         };
+                //                         $('#text'+resp+items[a]['linkId']).css("color", "grey");
+                //                     }
+                //                 };
+                //                 if(typeBtn == 'boolean'){
+                //                     if(items[a]['type'] == 'text' || items[a]['type'] == 'integer'){
+                //                         $('#'+resp+items[a]['linkId']).prop("disabled", false);
+                //                     };
+                //                     if(items[a]['type'] == 'boolean'){
+                //                     };
+                //                     if(items[a]['type'] == 'choice'){
+                //                         for(i=1; i<=items[a]['answerOption'].length;i++){
+                //                             $('#'+items[a]['linkId']+i).prop("disabled", false);
+                //                         };
+                //                         $('#text'+resp+items[a]['linkId']).css("color", "black");
+                //                     };
+                //                 };
+                //             } else {
+                //                 if(typeBtn == 'boolean'){
+                //                     if(items[a]['type'] == 'text'){
+                //                         // $('#'+resp+items[a]['linkId']).prop("disabled", true);
+                //                         $('#'+items[a]['enableWhen'][0]['question'].replace('~', '').replace('#', '')+items[a]['linkId']).prop("disabled", true);
+                //                     };
+                //                     if(items[a]['type'] == 'integer'){
+                //                         $('#'+items[a]['enableWhen'][0]['question'].replace('~', '').replace('#', '')+items[a]['linkId']).prop("disabled", true);
+                //                     };
+                //                     if(items[a]['type'] == 'choice'){
+                //                         for(i=1; i<=items[a]['answerOption'].length;i++){
+                //                             $('#'+items[a]['linkId']+i).prop("disabled", true);
+                //                         };
+                //                         $('#text'+resp+items[a]['linkId']).css("color", "lightsteelblue");
+                //                     };
+                //                 };
+                //                 if(typeBtn == 'choice'){
+
+                //                     var checkBox = document.getElementById(resp);
+                //                     if (checkBox.checked == true){
+                //                         if(items[a]['type'] == 'text'){
+                //                             $('#'+resp+items[a]['linkId']).prop("disabled", true);
+                //                         };
+                //                         if(items[a]['type'] == 'boolean'){
+                //                             $('#'+items[a]['linkId']+'-1').prop("disabled", true);
+                //                             $('#'+items[a]['linkId']+'-0').prop("disabled", true);
+                //                         };
+                //                         if(items[a]['type'] == 'choice'){
+
+                //                             for(i=1; i<=items[a]['answerOption'].length;i++){
+                //                                 $('#'+items[a]['linkId']+i).prop("disabled", true);
+                //                             };
+                //                         };
+                //                         $('#text'+items[a]['enableWhen'][0]['question'].replace('~', '').replace('#', '')+items[a]['linkId']).css("color", "lightsteelblue");
+                //                     }
+                //                 };
+                //             };
+                //         };
+                //     };
+                // };
+
+            </script>
+        </div>   
+
+
+        {% else %}
+        <div>
+            {% if elem['type'] == 'text' %}
+                <div >
+                    <textarea name="{{ elem['type'] }}~{{ name['id'] }}~{{ elem['linkId'] }}~{{ loop.index }}" onfocus="autoResizeText()" class="form-control autoresizing"></textarea>
+                </div>
+            {% endif %}
+
+            {% if elem['type'] == 'date' %}
+                <div >
+                    <input type="date" id="start" name="{{ elem['type'] }}~{{ name['id'] }}~{{ elem['linkId'] }}~{{ loop.index }}" value="" min="1900-01-01" max="2021-12-31" class="form-control">
+                </div>
+            {% endif %}
+
+            {% if elem['type'] == 'time' %}
+                <div style="margin-left:10%; >
+                    <input type="time" id="start" name="{{ elem['text'] | replace('%20', '_')}}" value="" min="00:00" max="23:59" class="form-control">
+                </div>
+            {% endif %}
+    
+            {% if elem['type'] == 'boolean' %}
+                <div class="form-check">
+                    {% if 'enableWhen' in elem %}
+                        <input disabled="true" onclick="disableCheckbox('{{ elem["linkId"] }}~1#', 'boolean', '{{ elem['linkId']}}1')" class="form-check-input" type="radio" name="{{ elem['type'] }}~{{ name['id'] }}~{{ elem['linkId'] }}" id="{{ elem['linkId'] }}-1" value="true">
+                        <label class="form-check-label" for="{{ elem['linkId'] }}-true">
+                            Yes
+                        </label>
+                        <br>
+                        <input disabled="true" onclick="disableCheckbox('{{ elem["linkId"] }}~0#', 'boolean', '{{ elem['linkId']}}0')" class="form-check-input" type="radio" name="{{ elem['type'] }}~{{ name['id'] }}~{{ elem['linkId'] }}" id="{{ elem['linkId'] }}-0" value="false">
+                        <label class="form-check-label" for="{{ elem['linkId'] }}-false">
+                            No
+                        </label>
+                    {% else %}
+                        <input onclick="disableCheckbox('{{ elem["linkId"] }}~1#', 'boolean', '{{ elem['linkId']}}1')" class="form-check-input" type="radio" name="{{ elem['type'] }}~{{ name['id'] }}~{{ elem['linkId'] }}" id="{{ elem['linkId'] }}-1" value="true">
+                        <label class="form-check-label" for="{{ elem['linkId'] }}-true">
+                            Yes
+                        </label>
+                        <br>
+                        <input onclick="disableCheckbox('{{ elem["linkId"] }}~0#', 'boolean', '{{ elem['linkId']}}0')" class="form-check-input" type="radio" name="{{ elem['type'] }}~{{ name['id'] }}~{{ elem['linkId'] }}" id="{{ elem['linkId'] }}-0" value="false">
+                        <label class="form-check-label" for="{{ elem['linkId'] }}-false">
+                            No
+                        </label>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            {% if elem['type'] == 'choice' %}  
+                {% if 'extension' in elem %}
+                    <div class="col-md-12 mb-3">
+                        {% for elemChoice in elem['answerOption'] %}
+                            <div class="form-check form-check-inline">
+                                <input onclick="disableCheckbox('{{ elem['linkId']}}~{{ loop.index }}#', 'choice~EXT', {{ elem['linkId']}}{{ loop.index }})" class="form-check-input" type="radio" name="{{ elem['type'] }}~{{ name['id'] }}~{{ elem['linkId'] }}" id="{{ elem['linkId']}}{{ loop.index }}" value="{{ elemChoice['valueString'] | replace('%20', ' ')}}">
+                                <label class="form-check-label" for="{{ elem['linkId']}}{{ loop.index }}">{{ elemChoice['valueString'] | replace('%20', ' ')}}</label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {% for elem2 in elem['answerOption'] %}
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">
+                                    {% if 'enableWhen' in elem %}
+                                        <input disabled="disabled" type="checkbox" name="{{ elem['type'] }}~{{ name['id'] }}~{{ elem['linkId'] }}~{{ loop.index }}"  id="{{ elem['linkId']}}{{ loop.index }}" value="{{ elem2['valueString'] | replace(' ', ' ')}}" onclick="disableCheckbox('{{ elem['linkId']}}~{{ loop.index }}#', 'choice', {{ elem['linkId']}}{{ loop.index }})">
+                                    {% else %}
+                                        <input type="checkbox" name="{{ elem['type'] }}~{{ name['id'] }}~{{ elem['linkId'] }}~{{ loop.index }}"  id="{{ elem['linkId']}}{{ loop.index }}" value="{{ elem2['valueString'] | replace(' ', ' ')}}" onclick="disableCheckbox('{{ elem['linkId']}}~{{ loop.index }}#', 'choice', {{ elem['linkId']}}{{ loop.index }})">
+                                    {% endif %}
+                                    <label class="form-check-label" for="{{ elem['linkId']}}{{loop.index}}">
+                                        {{ elem2['valueString'] | replace('%20', ' ')}}
+                                    </label>  
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endif %}
+                
+            {% if elem['type'] == 'integer' %}
+                {% if 'extension' in elem %}
+                    {% set min = elem['extension'][1]['valueInteger'] %}
+                    {% set max = elem['extension'][2]['valueInteger'] %}
+                    {% set step = elem['extension'][3]['valueInteger'] %}
+                    {% set val = max/2 %}
+                    <div class="col-md-12 mb-3">
+                        <div class="content-in-tab">
+                            {{ min }}<input type="range" name="{{ elem['type'] }}~{{ name['id'] }}~{{ elem['linkId'] }}~{{ loop.index }}" list="tickmarks" min="{{ min }}" max="{{ max }}" value="{{ min }}" step="{{ step }}" class="col-md-10 form-range" id="slide-{{ elem['linkId']}}">{{ max }}
+                            <datalist id="tickmarks">
+                            {% for i in range(elem['extension'][1]['valueInteger']+1) %}
+                                    <option value="{{ i }}"></option>
+                            {% endfor %}
+                            </datalist>
+                            <span id="demo-{{ elem['linkId']}}"></span>
+                        </div>
+                    </div>
+                    <script>
+                        // var slider = document.getElementById("myRange");
+                        // var output = document.getElementById("demo");
+                        // output.innerHTML = slider.value;
+                        // slider.oninput = function() {
+                        //     output.innerHTML = this.value;
+                        // }
+                        var slider{{ elem['linkId']}} = document.getElementById("slide-{{ elem['linkId']}}");
+                        var output{{ elem['linkId']}} = document.getElementById("demo-{{ elem['linkId']}}");
+                        output{{ elem['linkId']}}.innerHTML = slider{{ elem['linkId']}}.value;
+
+                        slider{{ elem['linkId']}}.oninput = function() {
+                            output{{ elem['linkId']}}.innerHTML = this.value;
+                        }
+                    </script>
+                {% endif %}
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <input type="hidden" name="intrID" value="{{ name['id'] }}">
+    {% endfor %}
+    <br>
+
+    <input type="submit" value="Save" class="btn btn-primary">
+</form>
+<!--
+<div class="content-in-tab">
+        <p> Rate your doctor:
+        0<input type="range" list="tickmarks" min="0" max="10" value="5" step="1" class="slider" id="linkitem-3.1-slider">100%
+        <datalist id="tickmarks">
+              <option value="0"></option>
+              <option value="1"></option>
+              <option value="2"></option>
+              <option value="3"></option>
+              <option value="4"></option>
+              <option value="5"></option>
+              <option value="6"></option>
+              <option value="7"></option>
+              <option value="8"></option>
+              <option value="9"></option>
+              <option value="10"></option>
+            </datalist>
+          
+        </p>
+      </div>
+    -->
+<script>
+    // var slider1 = document.getElementById("linkitem-3.1-slider");
+    // var output1 = document.getElementById("demo");
+    // output1.innerHTML = slider1.value;
+
+    // slider1.oninput = function() {
+    //     output1.innerHTML = this.value;
+    // }
+</script>
+
+{% endblock %}
+
+{% block customJS %}
+    <script src="{{ url_for('static', filename = 'node_modules/jquery/dist/jquery.min.js') }}"></script>
+{% endblock %}  

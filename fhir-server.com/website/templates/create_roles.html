@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+{% block title %}Create roles{% endblock %}
+
+{% block content %}
+<br>
+<h2>Create roles</h2>
+
+
+{% if roleEdit is defined %}
+    {{ roleEdit.id_nom_roles }}
+    {% set id = roleEdit.id_nom_roles %}
+    {% set roleName = roleEdit.role_name %}
+    {% set roleCode = roleEdit.code %}
+
+    {% if '11' in roleEdit.right %}
+        {% set readForm = 11 %}
+    {% endif %}
+    {% if '12' in roleEdit.right %}
+        {% set createForm = 12 %}
+    {% endif %}
+    {% if '13' in roleEdit.right %}
+        {% set deleteForm = 13 %}
+    {% endif %}
+    {% if '21' in roleEdit.right %}
+        {% set readAnswer = 21 %}
+    {% endif %}
+    {% if '22' in roleEdit.right %}
+        {% set createAnswer = 22 %}
+    {% endif %}
+    {% if '23' in roleEdit.right %}
+        {% set deleteAnswer = 23 %}
+    {% endif %}
+    {% if '31' in roleEdit.right %}
+        {% set creatRoles = 31 %}
+    {% endif %}
+    {% if '32' in roleEdit.right %}
+        {% set createPract = 32 %}
+    {% endif %}
+    {% if '33' in roleEdit.right %}
+        {% set viewPract = 33 %}
+    {% endif %}
+    {% if '34' in roleEdit.right %}
+        {% set editPract = 34 %}
+    {% endif %}
+{% else %}
+
+{% set roleName = '' %}
+{% set roleCode = '' %}
+
+{% set readForm = 0 %}
+{% set createForm = 0 %}
+{% set deleteForm = 0 %}
+{% set readAnswer = 0 %}
+{% set createAnswer = 0 %}
+{% set deleteAnswer = 0 %}
+{% set creatRoles = 0 %}
+{% set createPract = 0 %}
+{% set viewPract = 0 %}
+{% set editPract = 0 %}
+
+{% set id = 0 %}
+
+{% endif %}
+
+<form action="/create_roles/" method="POST">
+    <label for="">Role name</label>
+    <input type="text" name="roleName" id="roleName" class="form-control" value="{{ roleName }}">
+    
+    <label for="">Role code</label>
+    <input type="text" name="roleCode" id="roleCode" class="form-control" value="{{ roleCode }}">
+
+    <br>
+    <h4>Forms rights</h4>
+    <div class="input-group mb-3">
+        <div class="input-group-prepend">
+            <div class="input-group-text">
+                <input type="checkbox" name="readform"  id="readform" value="11" {{ 'checked' if readForm == 11 }}>
+                <label class="form-check-label mr-2 ml-1" for="readform">
+                    Read form
+                </label>  
+                <input type="checkbox" name="createform"  id="createform" value="12" {{ 'checked' if createForm == 12 }}>
+                <label class="form-check-label mr-2 ml-1" for="createform">
+                    Create form
+                </label>  
+                <input type="checkbox" name="deleteform"  id="deleteform" value="13" {{ 'checked' if deleteForm == 13 }}>
+                <label class="form-check-label mr-2 ml-1" for="deleteform">
+                    Delete form
+                </label>  
+            </div>
+        </div>
+    </div>
+    <h4>Answers rights</h4>
+    <div class="input-group mb-3">
+        <div class="input-group-prepend">
+            <div class="input-group-text">
+                <input type="checkbox" name="readanswer"  id="readanswer" value="21" {{ 'checked' if readAnswer == 21 }}>
+                <label class="form-check-label mr-2 ml-1" for="readanswer">
+                    Read answer
+                </label>  
+                <input type="checkbox" name="createanswer"  id="createanswer" value="22" {{ 'checked' if createAnswer == 22 }}>
+                <label class="form-check-label mr-2 ml-1" for="createanswer">
+                    Create answer
+                </label>  
+                <input type="checkbox" name="deleteanswer"  id="deleteanswer" value="23" {{ 'checked' if deleteAnswer == 23 }}>
+                <label class="form-check-label mr-2 ml-1" for="deleteanswer">
+                    Delete answer
+                </label>  
+            </div>
+        </div>
+    </div>
+    <h4>Admin rights</h4>
+    <div class="input-group mb-3">
+        <div class="input-group-prepend">
+            <div class="input-group-text">
+                <input type="checkbox" name="createrole"  id="createrole" value="31" {{ 'checked' if creatRoles == 31 }}>
+                <label class="form-check-label mr-2 ml-1" for="createrole">
+                    Create roles
+                </label>  
+                <input type="checkbox" name="createpractitioner"  id="createpractitioner" value="32" {{ 'checked' if createPract == 32 }}>
+                <label class="form-check-label mr-2 ml-1" for="createpractitioner">
+                    Create practitioner
+                </label>  
+                <input type="checkbox" name="viewpractitioner"  id="viewpractitioner" value="33" {{ 'checked' if viewPract == 33 }}>
+                <label class="form-check-label mr-2 ml-1" for="viewpractitioner">
+                    View practitioner
+                </label>  
+                <input type="checkbox" name="editpractitioner"  id="editpractitioner" value="34" {{ 'checked' if editPract == 34 }}>
+                <label class="form-check-label mr-2 ml-1" for="editpractitioner">
+                    Edit practitioner
+                </label>  
+            </div>
+        </div>
+    </div>
+
+    <input type="hidden" name="idRole" value="{{ id }}">
+
+
+
+    <input type="submit" value="Save" class="btn btn-primary">
+</form>
+
+{% endblock %}
+
+
+<!--
+    forms - 1
+        read - 1
+        create - 2
+        delete - 3
+    answers - 2
+        read - 1
+        create - 2
+        delete - 3
+    users - 3
+        create roles - 1
+        create practitioner - 2
+        view practitioner - 3
+        edit practitioner - 4
+
+-->

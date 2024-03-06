@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+{% block title %}Forms{% endblock %}
+
+{% block content %}
+
+  <article>
+
+    <form id="formResponse" action="{{url_for('views.saveRaspuns')}}" method="post">
+        
+        <select name="patients" id="patients">
+            <option value="pacient-1">Pacient 1</option>
+            <option value="pacient-2">Pacient 2</option>
+            <option value="pacient-3">Pacient 3</option>
+            <option value="pacient-4">Pacient 4</option>
+            <option value="pacient-5">Pacient 5</option>
+        </select>
+
+        {% for elem in answer['item'] %}
+            
+            {% if 'enableWhen' in elem %}
+                
+                <h5 id="text{{ elem['enableWhen'][0]['question'] | replace('~', '') | replace('#', '') }}{{ elem['linkId'] }}" style="color: lightsteelblue;">{{ elem['text'] | replace("%20", " ") | replace("%0D%0A", "\n")}}</h5>
+    
+            {% else %}
+                <h5>{{ elem['text'] | replace("%20", " ") | replace("%0D%0A", "\n")}}</h5>
+    
+            {% endif %} 
+    
+            {% if 'enableWhen' in elem %}
+                
+                {% if elem['type'] == 'text' %}
+    
+                    {% if elem['enableWhen'][0]['answerBoolean'] == True %}
+                        {% set boolVal = 1 %}
+                    {% else %}
+                        {% set boolVal = 0 %}
+                    {% endif %}                            
+                    
+                    <div >
+                        
+                        <textarea name="{{ elem['type'] }}~{{ answer['id'] }}~{{ elem['linkId'] }}~{{ loop.index }}" id="{{elem['enableWhen'][0]['question']|replace('#', '')|replace('~', '')}}{{ elem['linkId'] }}" class="autoresizing {{elem['enableWhen'][0]['question']|replace('#', '')|replace('~', '')}}{{ boolVal }}" disabled="disabled" onfocus="autoResizeText()"></textarea>
+                    </div>
+                    
+                {% endif %}
+    
+    
+    
+                <script>
+    
+                    var arr = arr || [];
+                    var arr2 = arr2 || [];
+    
+                    var rasp = rasp || [];
+                    var rasp2 = rasp2 || [];
+    
+                    var items = items || {{ answer['item']|safe | replace(True, '1')  | replace(False, '0') }};
+    
+                    console.log(items);
+                    for(let i = 0; i < items.length; i++){
+                       
+                        if(items[i]['enableWhen'] !== undefined){
+                            console.log('AICI');
+                            console.log(items[i]['enableWhen'][0]['question']);
+                            console.log('AICI');
+                            rasp.push(items[i]['enableWhen'][0]['question'].replace(/~/gi, ""))
+                            
+                        };
+                    }
+                  
+                    console.log(rasp);
+    
+                    function disableFalse(idElem){
+                        alert(1);
+                        console.log('{{elem['enableWhen'][0]['question']}}'+1)
+                        if(idElem == '{{elem['enableWhen'][0]['question']}}'+1){
+                            
+                            $('#'+'{{elem['enableWhen'][0]['question']}}'+0).prop("disabled", true);
+                            $('#'+idElem).prop("disabled", false);
+                        } else {
+                            $('#'+'{{elem['enableWhen'][0]['question']}}'+1).prop("disabled", true);
+                            $('#'+idElem).prop("disabled", false);
+    
+                        }
+                    }
+    
+    
+                    function disableCheckbox(idElemCheck, typeBtn){
+    
+                        elemID = idElemCheck.replace('#','');
+                        elemID2 = elemID.replace('~','');
+                        console.log(elemID2);
+                        $('*[id*=elemID2]:visible').each(function() {
+                            $(this).prop("disabled", true);
+                        });
+    
+                        var items = items || {{ answer['item']|safe | replace(True, '1')  | replace(False, '0') }};
+                        console.log(arr2);
+                        var x = x || [];
+                        let y = idElemCheck.replace('#', '');
+                        
+                        if(typeBtn == 'boolean'){
+                            console.log('Y: '+y)
+                            quest = idElemCheck.split('~')[0];
+                            newElem = idElemCheck.replace('#', '');
+                            newElem2 = newElem.substr(newElem.length - 1);
+                            
+                            if(newElem2 == 1){
+                                elemCautat = quest+'~0';
+                                var index = arr2.indexOf(elemCautat);
+                                if (index > -1) {
+                                    arr2.splice(index, 1);
+                                }
+                                arr2.push(y);
+                            }
+                            if(newElem2 == 0){
+                                elemCautat = quest+'~1';
+                                var index = arr2.indexOf(elemCautat);
+                                if (index > -1) {
+                                    arr2.splice(index, 1);
+                                }
+                                arr2.push(y);
+                            }
+                        } else {
+                            var index = arr2.indexOf(idElemCheck.replace('#', ''));
+                            console.log(idElemCheck.replace('#', ''));
+                            console.log(index);
+                            if (index > -1) {
+                                arr2.splice(index, 1);
+                            } else {
+                                arr2.push(y);
+                            }
+                        }
+    
+                        console.log(arr2);
+    
+                        for(let a = 0; a < items.length; a++){
+                            let bbb = '';
+                            if(items[a]['enableWhen'] !== undefined){
+                                x = items[a]['enableWhen'][0]['question'].split("#");
+                                for (aa=0; aa<x.length; aa++){
+                                    if(arr2.indexOf(x[aa]) >= 0){
+                                        bbb = bbb + x[aa].replace('~','');
+                                    }
+                                }
+    
+                                $('#'+bbb+items[a]['linkId']).prop("disabled", false);
+                                $('#text'+bbb+items[a]['linkId']).css("color", "black");
+                        
+                            }
+                        };
+                    }
+    
+                </script>
+                
+                
+    
+            {% else %}
+    
+                {% if elem['type'] == 'text' %}
+                        
+                    <div >
+                        <textarea name="{{ elem['type'] }}~{{ answer['id'] }}~{{ elem['linkId'] }}~{{ loop.index }}" onfocus="autoResizeText()" class="autoresizing"></textarea>
+                    </div>
+                    
+    
+                {% endif %}
+    
+                {% endif %}
+                
+                
+                {% if elem['type'] == 'date' %}
+                    
+                    <div >
+                        <input type="date" id="start" name="{{ elem['type'] }}~{{ answer['id'] }}~{{ elem['linkId'] }}~{{ loop.index }}" value="" min="1900-01-01" max="2021-12-31">
+                    </div>
+                    
+        
+                {% endif %}
+    
+                {% if elem['type'] == 'time' %}
+        
+                    <div style="margin-left:10%; >
+                        <input type="time" id="start" name="{{ elem['text'] | replace('%20', '_')}}" value="" min="00:00" max="23:59">
+                    </div>
+                    
+        
+                {% endif %}
+        
+                {% if elem['type'] == 'boolean' %}
+
+                    <div class="form-check">
+                        <input onclick="disableCheckbox('{{ elem["linkId"] }}~1#', 'boolean')" class="form-check-input" type="radio" name="{{ elem['type'] }}~{{ answer['id'] }}~{{ elem['linkId'] }}~{{ loop.index }}" id="{{ elem['type'] }}~{{ answer['id'] }}~{{ elem['linkId'] }}~{{ loop.index }}" value="true">
+                        <label class="form-check-label" for="{{ elem['linkId'] }}-true">
+                            Yes
+                        </label>
+                        <br>
+                        <input onclick="disableCheckbox('{{ elem["linkId"] }}~0#', 'boolean')" class="form-check-input" type="radio" name="{{ elem['type'] }}~{{ answer['id'] }}~{{ elem['linkId'] }}~{{ loop.index }}" id="{{ elem['type'] }}~{{ answer['id'] }}~{{ elem['linkId'] }}~{{ loop.index }}" value="false">
+                        <label class="form-check-label" for="{{ elem['linkId'] }}-false">
+                            No
+                        </label>
+
+                    </div>
+        
+                {% endif %}
+    
+                {% if elem['type'] == 'choice' %}    
+        
+                    {% for elem2 in elem['answerOption'] %}
+
+                        <div class="form-check">
+                            <input onclick="disableCheckbox('{{ elem['linkId']}}~{{ loop.index }}#', 'choice')" class="form-check-input" type="checkbox" name="{{ elem['type'] }}~{{ answer['id'] }}~{{ elem['linkId'] }}~{{ loop.index }}"  id="{{ elem['linkId']}}{{ loop.index }}" value="{{ elem2['valueString'] | replace(' ', ' ')}}">
+                            <label class="form-check-label" for="{{ elem['linkId']}}{{loop.index}}">
+                            {{ elem2['valueString'] | replace('%20', ' ')}}
+                            </label>
+                        </div>
+        
+                    {% endfor %}
+        
+                    
+        
+                {% endif %}
+            
+            <input type="hidden" name="intrID" value="{{ answer['id'] }}">
+        {% endfor %}
+        
+        <input type="submit" value="Save">
+                </form>
+
+  </article>
+  {% endblock %}
